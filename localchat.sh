@@ -58,9 +58,9 @@ systemctl start matrix-conduit
 echo "Conduit setup complete."
 
 ## lighttpd
-apt-get install lighttpd
-rm -rf /var/www/html
-
+apt-get install lighttpd -y
+rm -rf /var/www
+mkdir -p /var/www
 ## cinny
 wget -O /tmp/cinny https://github.com/cinnyapp/cinny/releases/download/v3.1.0/cinny-v3.1.0.tar.gz
 tar -xvf /tmp/cinny -C /var/www/
@@ -76,15 +76,6 @@ chown -R www-data:www-data /var/www/html
 
 echo "Cinny setup complete."
 
-## hotspot config
-EX = $(nmcli con | grep wlan0 | awk '{print $1}')
-nmcli connection modify $EX connection.autoconnect no
-
-nmcli device wifi hotspot ssid chat.local password ChangeMe
-nmcli connection modify Hotspot autoconnect yes
-
-echo "Hotspot setup complete."
-
 
 # setup hostname
 echo "chat" > /etc/hostname
@@ -97,4 +88,13 @@ ff02::2         ip6-allrouters
 
 echo "Hostname setup complete."
 
-echo "Connect to the hotspot and visit http://chat.local to start chatting."
+## hotspot config
+nmcli connection modify $(nmcli con | grep wlan0 | awk '{print $1}') connection.autoconnect no
+
+echo "Connect to the hotspot chat.local password ChangeMe and visit http://chat.local to start chatting."
+
+nmcli device wifi hotspot ssid chat.local password ChangeMe
+nmcli connection modify Hotspot autoconnect yes
+
+echo "Hotspot setup complete."
+
