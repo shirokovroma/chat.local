@@ -85,16 +85,33 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 
 127.0.1.1       chat' > /etc/hosts
-
 echo "Hostname setup complete."
 
 ## hotspot config
 nmcli connection modify $(nmcli con | grep wlan0 | awk '{print $1}') connection.autoconnect no
-
 echo "Connect to the hotspot chat.local password ChangeMe and visit http://chat.local to start chatting."
-
 nmcli device wifi hotspot ssid chat.local password ChangeMe
 nmcli connection modify Hotspot autoconnect yes
-
 echo "Hotspot setup complete."
 
+## hotspot recovery service
+echo '[Unit]
+Description=Restore WiFi Hotspot on Boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/hotspot-restore.sh
+
+[Install]
+WantedBy=multi-user.target
+' > /etc/systemd/system/hotspot-restore.service
+
+cat <<'EOF' > /usr/local/bin/hotspot-restore.sh
+#!/bin/bash
+nmcli device wifi hotspot ssid chat.local password ChangeMe
+nmcli connection modify Hotspot autoconnect yes
+EOF
+chmod +x /usr/local/bin/hotspot-restore.sh
+
+systemctl enable hotspot-restore.service
